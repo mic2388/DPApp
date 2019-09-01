@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using DatingApp.API.Helpers;
 using System.Collections.Generic;
+using System.Security.Claims;
+using System;
 
 namespace DatingApp.API.Controllers
 {
@@ -78,6 +80,22 @@ namespace DatingApp.API.Controllers
             //auto mapper issue to resolve later
             var userToReturn = _mapper.Map<UserForDetailedDTO>(user);
             return Ok(userToReturn);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, 
+        UserForUpdatesDTO userForUpdatesDTO)
+        {
+            if(id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var userFromRepo = await _repo.GetUser(id);
+            _mapper.Map(userForUpdatesDTO,userFromRepo);
+
+            if( await _repo.SaveAll())
+                return NoContent();
+            
+            throw new Exception($"Update of user with id {id} is failed");
         }
 
     }

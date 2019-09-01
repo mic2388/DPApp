@@ -1,3 +1,7 @@
+import { FileUploadModule } from 'ng2-file-upload';
+
+import { MemberEditResolver } from './_resolvers/member-edit.resolver';
+import { MemberEditComponent } from './members/member-edit/member-edit.component';
 import { MemberDetailResolver } from './_resolvers/member-detail.resolver';
 import { MemberDetailComponent } from './members/member-detail/member-detail.component';
 
@@ -25,6 +29,9 @@ import { appRoutes } from './routes';
 import { AuthGuard } from './_guards/auth.guard';
 import { MemberCardsComponent } from './members/member-cards/member-cards.component';
 import { MemberListResolver } from './_resolvers/member-list.resolver';
+import { PreventUnsavedChanges } from './_guards/prevent-unsaved-changes.guard';
+import { PhotoEditorComponent } from './members/photo-editor/photo-editor.component';
+
 
 
 export function tokenGetter() {
@@ -42,7 +49,9 @@ export function tokenGetter() {
       ListsComponent,
       MessagesComponent,
       MemberCardsComponent,
-      MemberDetailComponent
+      MemberDetailComponent,
+      MemberEditComponent,
+      PhotoEditorComponent
    ],
    imports: [
       BrowserModule,
@@ -58,16 +67,19 @@ export function tokenGetter() {
            blacklistedRoutes: ['localhost:5000/api/auth']
          }
        }),
-       NgxGalleryModule
+       NgxGalleryModule,
+       FileUploadModule
    ],
    providers: [
       AuthService,
       ErrorInterceptorProvider,
       AlertifyService,
       AuthGuard,
+      PreventUnsavedChanges,
       UserService,
       MemberDetailResolver,
-      MemberListResolver
+      MemberListResolver,
+      MemberEditResolver
    ],
    bootstrap: [
       AppComponent
