@@ -8,15 +8,16 @@ import { MemberDetailComponent } from './members/member-detail/member-detail.com
 import { UserService } from './_services/user.service';
 import { AuthService } from './_services/auth.service';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
-import { BsDropdownModule, TabsModule } from 'ngx-bootstrap';
+import { BsDropdownModule, TabsModule, BsDatepickerModule } from 'ngx-bootstrap';
 import { RouterModule } from '@angular/router';
 import { JwtModule } from '@auth0/angular-jwt';
 import { NgxGalleryModule} from 'ngx-gallery';
 
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { NavComponent } from './nav/nav.component';
 import { HomeComponent } from './home/home.component';
 import { RegisterComponent } from './register/register.component';
@@ -31,6 +32,7 @@ import { MemberCardsComponent } from './members/member-cards/member-cards.compon
 import { MemberListResolver } from './_resolvers/member-list.resolver';
 import { PreventUnsavedChanges } from './_guards/prevent-unsaved-changes.guard';
 import { PhotoEditorComponent } from './members/photo-editor/photo-editor.component';
+import { importType } from '@angular/compiler/src/output/output_ast';
 
 
 
@@ -55,9 +57,12 @@ export function tokenGetter() {
    ],
    imports: [
       BrowserModule,
+      BrowserAnimationsModule,
       HttpClientModule,
       FormsModule,
+      ReactiveFormsModule,
       BsDropdownModule.forRoot(),
+      BsDatepickerModule.forRoot(),
       TabsModule.forRoot(),
       RouterModule.forRoot(appRoutes),
       JwtModule.forRoot({
