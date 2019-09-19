@@ -1,3 +1,4 @@
+import { Pagination, PaginationResult } from './../../_models/Pagination';
 import { ActivatedRoute } from '@angular/router';
 import { AlertifyService } from '../../_services/alertify.service';
 import { UserService } from '../../_services/user.service';
@@ -12,6 +13,10 @@ import { Component, OnInit, Output } from '@angular/core';
 export class MemberListComponent implements OnInit {
 
   users: User[];
+  user: User = JSON.parse(localStorage.getItem('user'));
+  genderList = [{value: 'male', display: 'Males'}, {value: 'female', display: 'Females'}];
+  userParams: any = {};
+  pagination: Pagination;
   constructor(private userService: UserService, private alertifySvc: AlertifyService, private route: ActivatedRoute) {
 
    }
@@ -19,17 +24,37 @@ export class MemberListComponent implements OnInit {
   ngOnInit() {
 
      this.route.data.subscribe(data => {
-        this.users = data['users'];
+        this.users = data['users'].result;
+        this.pagination = data['users'].pagination;
      });
     // this.loadUsers();
+    this.userParams.gender = this.user.gender === 'female' ? 'male' : 'female';
+    this.userParams.maxAge = 99;
+    this.userParams.minAge = 18;
+    this.userParams.orderBy = 'lastActive';
   }
 
-  // loadUsers(){
-  //   this.userService.getUsers().subscribe((userResult: User[]) => {
-  //     this.users = userResult;
-  //   }, error => {
-  //     this.alertifySvc.error('couldnt fetch users');
-  //   });
-  // }
+  resetFilters() {
+    this.userParams.gender = this.user.gender === 'female' ? 'male' : 'female';
+    this.userParams.maxAge = 99;
+    this.userParams.minAge = 18;
+    this.userParams.orderBy = 'lastActive';
+    this.loadUsers();
+  }
+
+  pageChanged(event: any): void {
+    this.pagination.currentPage = event.page;
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.userService.getUsers(this.pagination.currentPage, this.pagination.itemsPerPage, this.userParams)
+    .subscribe((result: PaginationResult<User[]>) => {
+      this.users = result.result;
+      this.pagination = result.pagination;
+    }, error => {
+      this.alertifySvc.error('couldnt fetch users');
+    });
+  }
 
 }

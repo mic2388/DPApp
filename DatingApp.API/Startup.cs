@@ -59,6 +59,8 @@ namespace DatingApp.API
                     ValidateAudience = false
                 };
             });
+
+            services.AddScoped<LogUserActivity>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -91,7 +93,7 @@ namespace DatingApp.API
                 app.UseHsts();
             }
 
-            seeder.SeedUsers();
+            // seeder.SeedUsers();
             //order is important
             app.UseCors(t => t.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
         

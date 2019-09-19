@@ -7,15 +7,16 @@ import { User } from '../_models/User';
 import { Observable, of } from 'rxjs';
 
 @Injectable()
-export class MemberListResolver implements Resolve<User[]> {
+export class ListsResolver implements Resolve<User[]> {
   pageNumber = 1;
   pageSize = 5;
+  likesParams = 'Likers';
 
 
  constructor(private userService: UserService, private alertifySvc: AlertifyService , private router: Router ) {}
 
  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): User[] | Observable<User[]> | Promise<User[]> {
-     return this.userService.getUsers(this.pageNumber, this.pageSize).pipe(catchError(error => {
+     return this.userService.getUsers(this.pageNumber, this.pageSize, null, this.likesParams).pipe(catchError(error => {
         this.alertifySvc.error('Error in fectching user');
         return of(null);
     }));

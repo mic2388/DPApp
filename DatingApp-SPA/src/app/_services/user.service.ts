@@ -1,5 +1,6 @@
+import { PaginationResult } from './../_models/Pagination';
 import { AlertifyService } from './alertify.service';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { Observable } from 'rxjs';
@@ -20,8 +21,37 @@ export class UserService {
 baseUrl: string = environment.apiUrl;
 constructor(private http: HttpClient) { }
 
-getUsers(): Observable<User[]> {
-return this.http.get<User[]>(this.baseUrl + 'users');
+getUsers(page?, itemsPerPage?, userParams?, likesParams?): Observable<PaginationResult<User[]>> {
+const paginatedResult: PaginationResult<User[]> =  new PaginationResult<User[]>();
+let params = new HttpParams();
+
+if (page != null && itemsPerPage != null) {
+  params = params.append('pageNumber', page);
+  params = params.append('pageSize', itemsPerPage);
+}
+if (userParams != null) {
+  params = params.append('minAge', userParams.minAge);
+  params = params.append('maxAge', userParams.maxAge);
+  params = params.append('gender', userParams.gender);
+  params = params.append('orderBy', userParams.orderBy);
+}
+if (likesParams === 'Likers') {
+  params = params.append('likers', 'true');
+}
+
+if (likesParams === 'Likees') {
+  params = params.append('likees', 'true');
+}
+
+return this.http.get<User[]>(this.baseUrl + 'users', {observe: 'response', params}).pipe(map(
+  response => {
+      paginatedResult.result = response.body;
+      if (response.headers.get('Pagination') != null) {
+      paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'));
+      }
+      return paginatedResult;
+  })
+  );
 // return this.http.get<User[]>(this.baseUrl + 'users', httpOptions);
 }
 
@@ -49,4 +79,9 @@ deletePhoto(id: number, userId: number) {
 
   }));
 }
+
+sendLike(id: number, recipientId: number) {
+  return this.http.post(this.baseUrl + 'users/' + id + '/like/' + recipientId, {});
+}
+
 }
