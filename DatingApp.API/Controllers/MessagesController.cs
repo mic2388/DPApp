@@ -46,7 +46,9 @@ namespace DatingApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMessage(int userId, MessageForCreationDTO messageForCreationDTO)
         {
-             if(userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            var sender = await _repository.GetUser(userId);
+
+             if(sender.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
             messageForCreationDTO.SenderId = userId;
@@ -60,10 +62,10 @@ namespace DatingApp.API.Controllers
 
             _repository.Add(message);
 
-            var messageToReturn = _mapper.Map<MessageForCreationDTO>(message);
-
+         
             if (await _repository.SaveAll())
             {
+                    var messageToReturn = _mapper.Map<MessageToReturnDto>(message);
                     return CreatedAtRoute("GetMessage", new {id = message.Id}, messageToReturn);
             }
 
@@ -72,5 +74,83 @@ namespace DatingApp.API.Controllers
             //return BadRequest("Some error occured");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetMessagesForUsers(int userId, [FromQuery]MessageParams messageParams)
+        {
+            if(userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+
+            messageParams.UserId = userId;
+
+            var messagesfromRepo = await _repository.GetMessagesForUser(messageParams);
+            var messages = _mapper.Map<IEnumerable<MessageToReturnDto>>(messagesfromRepo);
+
+            Response.AddPagination(messagesfromRepo.CurrentPage,messagesfromRepo.PageSize
+            ,messagesfromRepo.TotalCount, messagesfromRepo.TotalPages);
+
+            return Ok(messages);
+        }
+
+        [HttpGet("thread/{recipientId}")]
+        public async Task<IActionResult> GetMessageThread(int userId, int recipientId)
+        {
+            if(userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var messagesFromRepo = await _repository.GetMessageThread(userId,recipientId);
+            var messageToReturn = _mapper.Map<IEnumerable<MessageToReturnDto>>(messagesFromRepo);
+
+            return Ok(messageToReturn);
+
+        }
+
+        [HttpPost("{id}")]
+        public async Task<IActionResult> DeleteMessage(int id, int userId)
+        {
+             if(userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+                var messageFromRepo = await _repository.GetMessage(id);
+
+                if(messageFromRepo.SenderId == userId){
+                    messageFromRepo.SenderDeleted = true;
+                }
+
+                if(messageFromRepo.RecipientId == userId){
+                    messageFromRepo.RecipientDeleted = true;
+                }
+
+                if(messageFromRepo.SenderDeleted == messageFromRepo.RecipientDeleted){
+                    _repository.Delete(messageFromRepo);
+                }
+
+                if (await _repository.SaveAll()){
+                    return NoContent();
+                }
+
+                throw new Exception("error deleting the message");
+        }
+
+        [HttpPost("{id}/read")]
+        public async Task<IActionResult> MarkMessageAsRead(int userId, int id)
+        {
+            if(userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var message = await _repository.GetMessage(id);
+            if(message.RecipientId != userId)
+            {
+                return Unauthorized();
+            }
+
+            message.IsRead = true;
+            message.DateRead = DateTime.Now;
+
+            await _repository.SaveAll();
+
+            return NoContent();
+
+        }
     }
 }

@@ -1,10 +1,10 @@
 import { AlertifyService } from './../../_services/alertify.service';
 import { UserService } from './../../_services/user.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { User } from 'src/app/_models/User';
 import { ActivatedRoute } from '@angular/router';
 import { NgxGalleryOptions, NgxGalleryImage, NgxGalleryAnimation } from 'ngx-gallery';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
+import { TabsetComponent } from 'ngx-bootstrap/tabs';
 
 @Component({
   selector: 'app-member-detail',
@@ -16,6 +16,7 @@ export class MemberDetailComponent implements OnInit {
   user: User;
   galleryOptions:  NgxGalleryOptions[];
   galleryImages: NgxGalleryImage[];
+  @ViewChild('memberTabs') memberTabs: TabsetComponent;
 
   constructor(private userService: UserService, private alertify: AlertifyService,
     private route: ActivatedRoute) { }
@@ -23,6 +24,11 @@ export class MemberDetailComponent implements OnInit {
   ngOnInit() {
     this.route.data.subscribe(data => {
       this.user = data['users'];
+    });
+
+    this.route.queryParams.subscribe(params => {
+      const selectedTab = params['tab'];
+      this.memberTabs.tabs[selectedTab > 0 ? selectedTab : 0].active = true;
     });
    // this.loadUser();
 
@@ -53,7 +59,9 @@ export class MemberDetailComponent implements OnInit {
     return imageUrls;
   }
 
-
+  selectTabs(tabId: number) {
+    this.memberTabs.tabs[tabId].active = true;
+  }
   // when route is activated if you need parameter , example here is 'id', then user activated route
   // loadUser(){
   //   this.userService.getUser(+this.route.snapshot.params['id']).subscribe((respone: User) => {
