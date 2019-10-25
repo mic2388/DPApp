@@ -8,6 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatingApp.API.Data
 {
+     //read this important
+    // eager loading - needs to use include statement to explicitly load ddependencide
+    // lazy loading just needs to configure in context class and 
+    // add virtual keyword in entity classes where we reference other navigational 
+    // properties , this will auto add whenever there is a need for dependent classes
     public class DatingRepository : IDatingRepository
     {
         private readonly DataContext _context;
@@ -47,7 +52,8 @@ namespace DatingApp.API.Data
 
         public async Task<User> GetUser(int id)
         {
-            var user = await _context.Users.Include(p=>p.Photos).FirstOrDefaultAsync(t=>t.Id == id);
+            //_context.Users.Include(p=>p.Photos) - for eager
+            var user = await _context.Users.FirstOrDefaultAsync(t=>t.Id == id);
             return user;
         }
 
@@ -59,7 +65,8 @@ namespace DatingApp.API.Data
 
         public async Task<PagedList<User>> GetUsers(UserParams userParams)
         {
-            var users =  _context.Users.Include(p=>p.Photos).OrderByDescending(t=>t.LastActive).AsQueryable();
+           //_context.Users.Include(p=>p.Photos) - for eager loading
+            var users =  _context.Users.OrderByDescending(t=>t.LastActive).AsQueryable();
             users =  users.Where(user=>user.Id != userParams.UserId).Where(u=>u.Gender == userParams.Gender);
 
             if(userParams.Likers){
@@ -97,9 +104,10 @@ namespace DatingApp.API.Data
 
         private async Task<IEnumerable<int>> GetUserLikes(int id, bool likers)
         {
+            // _context.Users
+            // .Include("Likers")
+            // .Include("Likees") - for eager
             var user = await _context.Users
-            .Include("Likers")
-            .Include("Likees")
             .FirstOrDefaultAsync(u=>u.Id == id);
 
             if(likers)
@@ -125,11 +133,13 @@ namespace DatingApp.API.Data
 
         public async Task<PagedList<Message>> GetMessagesForUser(MessageParams messageParams)
         {
+            //eager loading 
+            //  .Include(u=>u.Sender)
+            //         .ThenInclude(t=>t.Photos)
+            //         .Include(u=>u.Recipient)
+            //         .ThenInclude(t=>t.Photos)
             var messages =  _context.Messages
-                    .Include(u=>u.Sender)
-                    .ThenInclude(t=>t.Photos)
-                    .Include(u=>u.Recipient)
-                    .ThenInclude(t=>t.Photos).AsQueryable();
+                   .AsQueryable();
 
             switch(messageParams.MessageContainer)
             {
@@ -157,11 +167,14 @@ namespace DatingApp.API.Data
 
         public async Task<IEnumerable<Message>> GetMessageThread(int userId, int recipientId)
         {
+            //eager loading
+            // .Include(u=>u.Sender)
+            //         .ThenInclude(t=>t.Photos)
+            //         .Include(u=>u.Recipient)
+            //         .ThenInclude(t=>t.Photos)
+
             var messages = await _context.Messages
-                    .Include(u=>u.Sender)
-                    .ThenInclude(t=>t.Photos)
-                    .Include(u=>u.Recipient)
-                    .ThenInclude(t=>t.Photos).Where(t=>t.RecipientId == userId 
+                    .Where(t=>t.RecipientId == userId 
                     && t.RecipientDeleted == false && t.SenderId == recipientId 
                     || t.RecipientId == recipientId && t.SenderDeleted == false && t.SenderId == userId).OrderByDescending(t=>t.MessageSent)
                     .ToListAsync();

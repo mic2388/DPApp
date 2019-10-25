@@ -1,13 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using DatingApp.API.Models;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DatingApp.API.Data
 {
+    public static class ModelBuilderExtensions 
+    {
+        public static void RemovePluralizingTableNameConvention(this ModelBuilder modelBuilder)
+        {
+            foreach (IMutableEntityType entity in modelBuilder.Model.GetEntityTypes())
+            {
+                entity.Relational().TableName = entity.DisplayName();
+            }
+        }
+    }
     public class DataContext : DbContext
     {
         public DataContext(DbContextOptions<DataContext> options) : base (options)
         {
-
+            //uncomment if you want to create database
+             this.Database.EnsureCreated();
         }
 
         public DbSet<Values> Values { get; set; }
@@ -18,6 +31,7 @@ namespace DatingApp.API.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+           // builder.RemovePluralizingTableNameConvention();
             builder.Entity<Like>().HasKey(k=> new {k.LikerId, k.LikeeId});
                 
             builder.Entity<Like>()

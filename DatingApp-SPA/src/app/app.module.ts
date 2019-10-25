@@ -1,3 +1,4 @@
+import { environment } from './../environments/environment.prod';
 import { MessagesResolver } from './_resolvers/messages.resolver';
 import { ListsResolver } from './_resolvers/list-resolver';
 import { FileUploadModule } from 'ng2-file-upload';
@@ -75,7 +76,7 @@ export function tokenGetter() {
       JwtModule.forRoot({
          config: {
            tokenGetter: tokenGetter,
-           whitelistedDomains: ['localhost:5000'],
+           whitelistedDomains: ['localhost:5000', environment.apiUrl],
            blacklistedRoutes: ['localhost:5000/api/auth']
          }
        }),

@@ -32,11 +32,47 @@ namespace DatingApp.API
 
         public IConfiguration Configuration { get; }
 
+       public void ConfigureProductionServices(IServiceCollection services)
+        {
+            
+        //      services.AddDbContext<DataContext>(t 
+        //       => t.UseSqlServer(Configuration.GetConnectionString("DefaultConnection1"),
+        //    sqlServerOptionsAction: sqlOptions =>
+        //     {
+        //         sqlOptions.EnableRetryOnFailure(
+        //         maxRetryCount: 10,
+        //         maxRetryDelay: TimeSpan.FromSeconds(30),
+        //         errorNumbersToAdd: null);
+        //     }));
+            
+            services.AddDbContext<DataContext>(t=>{
+               t.UseLazyLoadingProxies();
+               t.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));  
+            });
+
+
+              ConfigureServices(services);
+
+        }
+        public void ConfigureDevelopmentServices(IServiceCollection services)
+        {
+            //  services.AddDbContext<DataContext>(t 
+            //   => t.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddDbContext<DataContext>(t=>{
+               t.UseLazyLoadingProxies();
+               t.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));  
+            });
+            
+            ConfigureServices(services);
+        }
+ 
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
              
-            services.AddDbContext<DataContext>(t => t.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            // services.AddDbContext<DataContext>(t => t.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
             .AddJsonOptions(Opt=> {
                 Opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
@@ -90,16 +126,23 @@ namespace DatingApp.API
                     });
                 });
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                 app.UseHsts();
             }
-
-            // seeder.SeedUsers();
+            
+            //app.UseDeveloperExceptionPage();
+            //seeder.SeedUsers();
             //order is important
             app.UseCors(t => t.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-        
+            app.UseDefaultFiles(); //this. looks for index.html file
+            app.UseStaticFiles(); // this looks for wwwroot folder
             app.UseHttpsRedirection();
             app.UseAuthentication();
-            app.UseMvc();
+            app.UseMvc(routes=> {
+                routes.MapSpaFallbackRoute(
+                    name : "spa-fallback",
+                    defaults: new { controller ="Fallback", action = "Index"}
+                    );
+            });
 
         }
     }
