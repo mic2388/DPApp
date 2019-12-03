@@ -1,20 +1,25 @@
 using System.Collections.Generic;
 using DatingApp.API.Models;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace DatingApp.API.Data
 {
     public class Seed
     {
-        private readonly DataContext _context;
-        public Seed(DataContext context)
-        {
-            this._context = context;
 
-        }
+        //for .net core 2.2 upgrade, we cannot call seedusers from configure services class, hence commented
+        // private readonly DataContext _context;
+        // public Seed(DataContext context)
+        // {
+        //     this._context = context;
 
-        public void SeedUsers()
+        // }
+
+        public static void SeedUsers(DataContext context)
         {
+
+            if(!context.Users.Any()){
             var userData = System.IO.File.ReadAllText("Data/UserSeedData.json");
             var users = JsonConvert.DeserializeObject<List<User>>(userData);
 
@@ -26,12 +31,14 @@ namespace DatingApp.API.Data
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
 
-                _context.Users.Add(user);
+                context.Users.Add(user);
             }
-            _context.SaveChanges();
+            context.SaveChanges();
+            }
+           
         }
 
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA256())
             {

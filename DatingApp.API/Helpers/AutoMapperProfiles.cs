@@ -15,14 +15,14 @@ namespace DatingApp.API.Helpers
             })
             .ForMember(dest=> dest.Age,opt=>{
 
-                opt.ResolveUsing(t=>t.DateOfBirth.CalculateAge());
+                opt.MapFrom(t=>t.DateOfBirth.CalculateAge());
             });
             CreateMap<User,UserForListDTO>()
             .ForMember(dest => dest.PhotoUrl , opt => {
                 opt.MapFrom(src=> src.Photos.FirstOrDefault(t=>t.IsMain).Url);
             }) .ForMember(dest=> dest.Age,opt=>{
 
-                opt.ResolveUsing(t=>t.DateOfBirth.CalculateAge());
+                opt.MapFrom(t=>t.DateOfBirth.CalculateAge());
             });
             CreateMap<Photo,PhotosForDetailDTO>();
             CreateMap<UserForUpdatesDTO,User>();

@@ -43,7 +43,7 @@ namespace DatingApp.API.Controllers
         public async Task<IActionResult> GetPhoto(int id)
         {
              var photoFromRepo = await _repo.GetPhoto(id);
-             var photos = Mapper.Map<PhotoForReturnDto>(photoFromRepo);
+             var photos = _mapper.Map<PhotoForReturnDto>(photoFromRepo);
              return Ok(photos);
         }
 

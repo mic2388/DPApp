@@ -20,7 +20,7 @@ namespace DatingApp.API.Data
         public DataContext(DbContextOptions<DataContext> options) : base (options)
         {
             //uncomment if you want to create database
-             this.Database.EnsureCreated();
+            // this.Database.EnsureCreated();
         }
 
         public DbSet<Values> Values { get; set; }
