@@ -16,7 +16,7 @@ export class MemberDetailComponent implements OnInit {
   user: User;
   galleryOptions:  NgxGalleryOptions[];
   galleryImages: NgxGalleryImage[];
-  @ViewChild('memberTabs') memberTabs: TabsetComponent;
+  @ViewChild('memberTabs', {static: true}) memberTabs: TabsetComponent;
 
   constructor(private userService: UserService, private alertify: AlertifyService,
     private route: ActivatedRoute) { }

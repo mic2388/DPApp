@@ -10,7 +10,7 @@ import { MemberDetailComponent } from './members/member-detail/member-detail.com
 
 import { UserService } from './_services/user.service';
 import { AuthService } from './_services/auth.service';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { BsDropdownModule, TabsModule, BsDatepickerModule, PaginationModule, ButtonsModule } from 'ngx-bootstrap';
@@ -43,7 +43,12 @@ import { MemberMessagesComponent } from './members/member-messages/member-messag
 export function tokenGetter() {
    return  localStorage.getItem('token');
  }
-
+ export class CustomHammerConfig extends HammerGestureConfig  {
+   overrides = {
+       pinch: { enable: false },
+       rotate: { enable: false }
+   };
+}
 
 @NgModule({
    declarations: [
@@ -94,7 +99,8 @@ export function tokenGetter() {
       MemberListResolver,
       MemberEditResolver,
       MessagesResolver,
-      ListsResolver
+      ListsResolver,
+      {provide: HAMMER_GESTURE_CONFIG, useClass: CustomHammerConfig }
    ],
    bootstrap: [
       AppComponent

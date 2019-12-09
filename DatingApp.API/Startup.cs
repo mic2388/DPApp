@@ -20,6 +20,7 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using DatingApp.API.Helpers;
 using AutoMapper;
+using Microsoft.Extensions.Hosting;
 
 namespace DatingApp.API
 {
@@ -71,12 +72,19 @@ namespace DatingApp.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-             
-            // services.AddDbContext<DataContext>(t => t.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-            .AddJsonOptions(Opt=> {
-                Opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            services.AddControllers().AddNewtonsoftJson(opt => {
+                opt.SerializerSettings.ReferenceLoopHandling 
+                = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+
             });
+             
+
+             ///** works for .net core 2.2 */
+            // services.AddDbContext<DataContext>(t => t.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            // services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+            // .AddJsonOptions(Opt=> {
+            //     Opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            // });
             services.AddCors();
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.AddAutoMapper(typeof(DatingRepository).Assembly);
@@ -100,7 +108,7 @@ namespace DatingApp.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
             // optional extra provider
@@ -126,23 +134,36 @@ namespace DatingApp.API
                     });
                 });
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                 app.UseHsts();
+                //  app.UseHsts();
             }
             
+            //app.UseHttpsRedirection();
+            app.UseRouting();
+
             //app.UseDeveloperExceptionPage();
             //seeder.SeedUsers();
-            //order is important
+
+            //order is important -- below
+            app.UseAuthorization();
+            app.UseAuthentication();
             app.UseCors(t => t.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
             app.UseDefaultFiles(); //this. looks for index.html file
             app.UseStaticFiles(); // this looks for wwwroot folder
             app.UseHttpsRedirection();
-            app.UseAuthentication();
-            app.UseMvc(routes=> {
-                routes.MapSpaFallbackRoute(
-                    name : "spa-fallback",
-                    defaults: new { controller ="Fallback", action = "Index"}
-                    );
+
+            app.UseEndpoints(endpoint=>{
+                    endpoint.MapControllers();
+                    endpoint.MapFallbackToController("Index","Fallback");
             });
+           
+
+           // use for .net core 2.2
+            // app.UseMvc(routes=> {
+            //     routes.MapSpaFallbackRoute(
+            //         name : "spa-fallback",
+            //         defaults: new { controller ="Fallback", action = "Index"}
+            //         );
+            // });
 
         }
     }
